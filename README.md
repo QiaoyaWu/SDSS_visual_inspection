@@ -5,4 +5,4 @@
 - run `python3 visual_inspection_SDSSV.py` and follow the procedure.
 
 See an example:
-
+![Example screenshot](https://github.com/QiaoyaWu/SDSS_visual_inspection/blob/main/vi_example.png)
