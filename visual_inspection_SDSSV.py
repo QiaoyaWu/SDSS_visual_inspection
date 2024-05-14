@@ -202,7 +202,7 @@ if __name__ == "__main__":
                 wave_obj, flux_obj, error_obj = read_sdss5_spec(spec_file_path)
                 info_obj = '%06d-%-5d-%d      z=%.4f\nCLASS=%s     FIRSTCARTON=%s'%(field_obj, mjd_obj, catalogID_obj, z_obj, class_obj, firstcarton_obj)    
                 fig = plot_spec(wave_obj, flux_obj, error_obj, z_obj, info_obj, smooth=1)
-                fig.show()
+                plt.show(block=False)
                 response = input()
                 if response == 'exit':
                     break
@@ -212,7 +212,10 @@ if __name__ == "__main__":
                 while flag:
                     if response == '':
                         flag = False
-                        obj_line = str(i)+','+str(field_obj)+','+str(mjd_obj)+','+str(catalogID_obj)+','+str(z_obj)+','+str(ra_obj)+','+str(dec_obj)+',,\n'
+                        if z_new != z_obj:
+                            obj_line = str(i)+','+str(field_obj)+','+str(mjd_obj)+','+str(catalogID_obj)+','+str(z_obj)+','+str(ra_obj)+','+str(dec_obj)+',z=%f,\n'%(z_new)
+                        else:
+                            obj_line = str(i)+','+str(field_obj)+','+str(mjd_obj)+','+str(catalogID_obj)+','+str(z_obj)+','+str(ra_obj)+','+str(dec_obj)+',,\n'
                     elif response == 'nonqso':
                         flag = False
                         obj_line = str(i)+','+str(field_obj)+','+str(mjd_obj)+','+str(catalogID_obj)+','+str(z_obj)+','+str(ra_obj)+','+str(dec_obj)+',nonqso,\n'
@@ -222,29 +225,28 @@ if __name__ == "__main__":
                     elif response == 'obs':
                         plt.close()
                         fig = plot_spec2(wave_obj, flux_obj, error_obj, z_new, info_obj, smooth=pix_smooth)
-                        fig.show()
+                        plt.show(block=False)
                         response = input()
                     elif response == 'rf':
                         plt.close()
                         fig = plot_spec(wave_obj, flux_obj, error_obj, z_new, info_obj, smooth=pix_smooth)
-                        fig.show()
+                        plt.show(block=False)
                         response = input()
                     elif response[:7] == 'smooth=':
                         pix_smooth = int(response[7:])
                         plt.close()
                         fig = plot_spec(wave_obj, flux_obj, error_obj, z_new, info_obj, smooth=pix_smooth)
-                        fig.show()
+                        plt.show(block=False)
                         response = input()
                     elif response[:2] == 'z=':
                         z_new = float(response[2:])
                         info_obj = '%06d-%-5d-%d      z=%.4f\nCLASS=%s     FIRSTCARTON=%s'%(field_obj, mjd_obj, catalogID_obj, z_new, class_obj, firstcarton_obj)    
                         plt.close()
                         fig = plot_spec(wave_obj, flux_obj, error_obj, z_new, info_obj, smooth=pix_smooth)
-                        fig.show()
+                        plt.show(block=False)
                         response = input()
                     elif response == 'exit':
-                        break
-                        
+                        break                        
                     else:
                         print('Invalid input. Please try again.')
                         print("1. Press Enter to skip the object \n2. Enter 'exit' to exit visual inspection \n"\
