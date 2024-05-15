@@ -24,7 +24,7 @@ def read_sdss5_spec(filename):
     good_ind = np.where((np.isfinite(flux))&(np.isfinite(error)))[0]
     return wave[good_ind], flux[good_ind], error[good_ind]
 
-def plot_spec(wave, flux, error, z, info, smooth=1):
+def plot_spec(fig, wave, flux, error, z, info, smooth=1):
     # plot rest-frame spectrum
     wave = wave/(1+z)
     flux = flux*(1+z)
@@ -39,8 +39,8 @@ def plot_spec(wave, flux, error, z, info, smooth=1):
     for wd in range(len(window_xrange)):
         if (wave.min()<window_xrange[wd][0]) and (wave.max()>window_xrange[wd][1]):
             nw += 1
-    fig, ax = plt.subplots(2, nw, figsize=(12, 8))
-    axes = plt.subplot(2,1,1)
+    #fig, ax = plt.subplots(2, nw, figsize=(12, 8))
+    axes = fig.add_subplot(2,1,1)
     axes.set_position([0.08, 0.52, 0.88, 0.4])
 
     axes.plot(wave, flux, 'k-', lw=0.8)
@@ -63,8 +63,8 @@ def plot_spec(wave, flux, error, z, info, smooth=1):
     dfig = (0.88-(nw-1)*0.04)/nw
     for wd in range(len(window_xrange)):
         if (wave.min()<window_xrange[wd][0]) and (wave.max()>window_xrange[wd][1]):
-            if nw > 1: axis = ax[1][nwi]
-            else: axis = ax[1]
+            if nw > 1: axis = fig.add_subplot(2, nw, 2)
+            else: axis = fig.add_subplot(2, nw, nw+nwi)
             axis.set_position([0.08+nwi*(dfig+0.04), 0.05, dfig, 0.36])
             axis.set_title(window_name[wd], fontsize=15)
             ind_wd = np.where((wave>window_xrange[wd][0])&(wave<window_xrange[wd][1]))[0]
@@ -76,7 +76,7 @@ def plot_spec(wave, flux, error, z, info, smooth=1):
             nwi += 1
     return fig
 
-def plot_spec2(wave, flux, error, z, info, smooth=1):
+def plot_spec2(fig, wave, flux, error, z, info, smooth=1):
     # plot observed-frame spectrum
     if smooth > 1:
         flux = medfilt(flux, smooth)
@@ -87,8 +87,9 @@ def plot_spec2(wave, flux, error, z, info, smooth=1):
     for wd in range(len(window_xrange)):
         if (wave.min()<window_xrange[wd][0]*(1+z)) and (wave.max()>window_xrange[wd][1]*(1+z)):
             nw += 1
-    fig, ax = plt.subplots(2, nw, figsize=(12, 8))
-    axes = plt.subplot(2,1,1)
+    #fig, ax = plt.subplots(2, nw, figsize=(12, 8))
+    #axes = plt.subplot(2,1,1)
+    axes = fig.add_subplot(2,1,1)
     axes.set_position([0.08, 0.52, 0.88, 0.4])
 
     axes.plot(wave, flux, 'k-', lw=0.8)
@@ -114,8 +115,8 @@ def plot_spec2(wave, flux, error, z, info, smooth=1):
     dfig = (0.88-(nw-1)*0.04)/nw
     for wd in range(len(window_xrange)):
         if (wave.min()<window_xrange[wd][0]*(1+z)) and (wave.max()>window_xrange[wd][1]*(1+z)):
-            if nw > 1: axis = ax[1][nwi]
-            else: axis = ax[1]
+            if nw > 1: axis = fig.add_subplot(2, nw, 2)
+            else: axis = fig.add_subplot(2, nw, nw+nwi)
             axis.set_position([0.08+nwi*(dfig+0.04), 0.05, dfig, 0.36])
             axis.set_title(window_name[wd], fontsize=15)
             ind_wd = np.where((wave>window_xrange[wd][0]*(1+z))&(wave<window_xrange[wd][1]*(1+z)))[0]
@@ -201,8 +202,12 @@ if __name__ == "__main__":
             if os.path.exists(spec_file_path):
                 wave_obj, flux_obj, error_obj = read_sdss5_spec(spec_file_path)
                 info_obj = '%06d-%-5d-%d      z=%.4f\nCLASS=%s     FIRSTCARTON=%s'%(field_obj, mjd_obj, catalogID_obj, z_obj, class_obj, firstcarton_obj)    
-                fig = plot_spec(wave_obj, flux_obj, error_obj, z_obj, info_obj, smooth=1)
+                if i == start_index:
+                    fig = plt.figure(figsize=(12, 8))
+                fig = plot_spec(fig, wave_obj, flux_obj, error_obj, z_obj, info_obj, smooth=1)
+                plt.draw()
                 plt.show(block=False)
+                time.sleep(0.1)
                 response = input()
                 if response == 'exit':
                     break
@@ -223,27 +228,35 @@ if __name__ == "__main__":
                         flag = False
                         obj_line = str(i)+','+str(field_obj)+','+str(mjd_obj)+','+str(catalogID_obj)+','+str(z_obj)+','+str(ra_obj)+','+str(dec_obj)+',mark,\n'
                     elif response == 'obs':
-                        plt.close()
-                        fig = plot_spec2(wave_obj, flux_obj, error_obj, z_new, info_obj, smooth=pix_smooth)
+                        fig.clf()
+                        fig = plot_spec2(fig, wave_obj, flux_obj, error_obj, z_new, info_obj, smooth=pix_smooth)
+                        plt.draw()
                         plt.show(block=False)
+                        time.sleep(0.1)
                         response = input()
                     elif response == 'rf':
-                        plt.close()
-                        fig = plot_spec(wave_obj, flux_obj, error_obj, z_new, info_obj, smooth=pix_smooth)
+                        fig.clf()
+                        fig = plot_spec(fig, wave_obj, flux_obj, error_obj, z_new, info_obj, smooth=pix_smooth)
+                        plt.draw()
                         plt.show(block=False)
+                        time.sleep(0.1)
                         response = input()
                     elif response[:7] == 'smooth=':
                         pix_smooth = int(response[7:])
-                        plt.close()
-                        fig = plot_spec(wave_obj, flux_obj, error_obj, z_new, info_obj, smooth=pix_smooth)
+                        fig.clf()
+                        fig = plot_spec(fig, wave_obj, flux_obj, error_obj, z_new, info_obj, smooth=pix_smooth)
+                        plt.draw()
                         plt.show(block=False)
+                        time.sleep(0.1)
                         response = input()
                     elif response[:2] == 'z=':
                         z_new = float(response[2:])
                         info_obj = '%06d-%-5d-%d      z=%.4f\nCLASS=%s     FIRSTCARTON=%s'%(field_obj, mjd_obj, catalogID_obj, z_new, class_obj, firstcarton_obj)    
-                        plt.close()
-                        fig = plot_spec(wave_obj, flux_obj, error_obj, z_new, info_obj, smooth=pix_smooth)
+                        fig.clf()
+                        fig = plot_spec(fig, wave_obj, flux_obj, error_obj, z_new, info_obj, smooth=pix_smooth)
+                        plt.draw()
                         plt.show(block=False)
+                        time.sleep(0.1)
                         response = input()
                     elif response == 'exit':
                         break                        
@@ -259,7 +272,7 @@ if __name__ == "__main__":
                         response = input()
                 if response == 'exit':
                     break
-                plt.close()
+                fig.clf()
                 print('Object index '+str(i)+' done.')
                 dump_results += obj_line
             else:
